@@ -1,0 +1,17 @@
+name: Deploy to VM
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+
+    steps:
+      - name: Deploy via SSH
+        shell: pwsh
+        run: |
+          ssh ubuntu@127.0.0.1 -p 2222 "cd /home/ubuntu/app && docker compose pull && docker compose up -d"
