@@ -22,3 +22,11 @@ jobs:
             sudo docker rm prod_app || true &&
             sudo docker run -d --name prod_app -p 80:8000 552533870639.dkr.ecr.us-east-1.amazonaws.com/devops-app:latest
           "
+      - name: Health check
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.AWS_EC2_HOST }}/)
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Health check failed!"
+            exit 1
+          fi
