@@ -1,0 +1,24 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy_to_aws:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.AWS_EC2_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.AWS_EC2_USER }}@${{ secrets.AWS_EC2_HOST }} "
+            sudo docker pull 552533870639.dkr.ecr.us-east-1.amazonaws.com/devops-app:latest &&
+            sudo docker stop prod_app || true &&
+            sudo docker rm prod_app || true &&
+            sudo docker run -d --name prod_app -p 80:8000 552533870639.dkr.ecr.us-east-1.amazonaws.com/devops-app:latest
+          "
