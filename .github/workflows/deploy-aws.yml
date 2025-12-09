@@ -24,9 +24,16 @@ jobs:
           "
       - name: Health check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.AWS_EC2_HOST }}/)
-          echo "HTTP status: $STATUS"
-          if [ "$STATUS" -ne 200 ]; then
-            echo "Health check failed!"
-            exit 1
-          fi
+          for i in {1..5}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.AWS_EC2_HOST }}/ || echo "000")
+            echo "Attempt $i, status: $STATUS"
+            if [ "$STATUS" -eq 200 ]; then
+              echo "Health check OK"
+              exit 0
+            fi
+            echo "App is not ready yet, wait 5 seconds..."
+            sleep 5
+          done
+          echo "Health check failed after 5 attempts"
+          exit 1
+
